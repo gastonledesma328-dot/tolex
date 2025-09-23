@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Generador de Tweets estilo X</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0f1419;
+      --card:#15202b;
+      --text:#e6e6e6;
+      --muted:#8899a6;
+      --accent:#1d9bf0;
+      --border:#22303c;
+      --like:#f91880;
+      --rt:#00ba7c;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,sans-serif;background:#0f1419;color:var(--text);}
+    .wrap{max-width:1100px;margin:24px auto;padding:16px;display:grid;gap:16px;grid-template-columns:360px 1fr;}
+    @media (max-width: 900px){.wrap{grid-template-columns:1fr}}
+    .panel{background:#15202b;border:1px solid var(--border);border-radius:16px;padding:16px}
+    .panel h1{font-size:20px;margin:0 0 12px 0}
+    .panel .row{display:grid;gap:8px;margin-bottom:12px}
+    .panel label{font-size:12px;color:var(--muted)}
+    .panel input,.panel textarea{width:100%;background:#0b1116;border:1px solid var(--border);color:var(--text);border-radius:10px;padding:10px}
+    .panel textarea{min-height:96px;resize:vertical}
+    .chip{display:inline-flex;gap:8px;align-items:center;padding:8px 10px;border:1px solid var(--border);border-radius:999px;background:#0b1116;font-size:12px}
+    .btn{cursor:pointer;border:none;background:var(--accent);color:#00141f;padding:10px 14px;border-radius:10px;font-weight:700}
+    .btn.outline{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+    .btn-row{display:flex;gap:8px;flex-wrap:wrap}
+    .counter{font-size:12px;color:var(--muted);text-align:right;margin-top:-6px;margin-bottom:10px}
+    .stage{display:flex;justify-content:center}
+    .tweet-capture{width:600px;border:1px solid var(--border);border-radius:16px;overflow:hidden;background:var(--card)}
+    .cover{position:relative;height:180px;background:#0b1116 center/cover no-repeat}
+    .avatar{position:absolute;left:16px;bottom:-36px;width:72px;height:72px;border:4px solid var(--card);border-radius:50%;background:#0b1116 center/cover no-repeat}
+    .identity{padding:48px 16px 12px 16px;display:flex;justify-content:space-between;align-items:center}
+    .name{display:flex;gap:8px;align-items:center}
+    .name .display{font-weight:800}
+    .name .verified{width:20px;height:20px;display:inline-grid;place-items:center;color:var(--accent);background:rgba(29,155,240,.15);border:1px solid rgba(29,155,240,.4);border-radius:50%;font-size:12px}
+    .handle{color:var(--muted);font-size:14px}
+    .tweet{padding:12px 16px 16px 16px;border-top:1px solid var(--border);font-size:20px;line-height:1.4;white-space:pre-wrap}
+    .meta{padding:8px 16px;color:var(--muted);font-size:14px;border-top:1px solid var(--border)}
+    .actions{display:flex;gap:32px;padding:8px 16px 16px 16px;border-top:1px solid var(--border)}
+    .action{display:flex;gap:8px;align-items:center;color:var(--muted)}
+    .action .n{font-weight:600}
+    .action.rt .n{color:var(--rt)}
+    .action.like .n{color:var(--like)}
+    .watermark{padding:10px 16px;color:#6b7280;font-size:11px;border-top:1px dashed var(--border);text-align:right}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="panel">
+      <h1>Generar tweet</h1>
+      <div class="row">
+        <label for="displayName">Nombre</label>
+        <input id="displayName" type="text" value="Leo Messi" />
+      </div>
+      <div class="row">
+        <label for="handle">Usuario (@)</label>
+        <input id="handle" type="text" value="leomessi" />
+        <div class="chip"><input id="verified" type="checkbox" checked> <label for="verified">Verificado</label></div>
+      </div>
+      <div class="row">
+        <label for="tweetText">Texto</label>
+        <textarea id="tweetText" maxlength="280">ES UNA LASTIMA QUE EL BALON DE ORO...</textarea>
+        <div id="charCounter" class="counter">0 / 280</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="renderBtn">Actualizar</button>
+        <button class="btn outline" id="downloadBtn">Descargar PNG</button>
+      </div>
+    </section>
+    <section class="stage">
+      <div id="capture" class="tweet-capture">
+        <div id="cover" class="cover"></div>
+        <div class="avatar" id="avatar"></div>
+        <div class="identity">
+          <div>
+            <div class="name">
+              <span id="outName" class="display">Leo Messi</span>
+              <span id="outVerified" class="verified">✓</span>
+            </div>
+            <div class="handle" id="outHandle">@leomessi</div>
+          </div>
+        </div>
+        <div class="tweet" id="outTweet">ES UNA LASTIMA QUE EL BALON DE ORO...</div>
+        <div class="meta"><span id="outDate">6:44 PM · 22 Sep 25</span></div>
+        <div class="actions">
+          <div class="action"><span class="n">234</span> respuestas</div>
+          <div class="action rt"><span class="n">1204</span> RTs</div>
+          <div class="action like"><span class="n">3412</span> Me gusta</div>
+        </div>
+        <div class="watermark">Hecho con tu generador de tweets</div>
+      </div>
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script>
+    const $ = s => document.querySelector(s);
+    const tweetText = $('#tweetText');
+    const counter = $('#charCounter');
+    tweetText.addEventListener('input', () => {
+      counter.textContent = tweetText.value.length + " / 280";
+    });
+    function render(){
+      $('#outName').textContent = $('#displayName').value;
+      $('#outHandle').textContent = '@'+($('#handle').value||'usuario');
+      $('#outTweet').textContent = tweetText.value;
+      $('#outVerified').style.display = $('#verified').checked ? 'inline-grid' : 'none';
+      $('#outDate').textContent = new Date().toLocaleString();
+    }
+    $('#renderBtn').addEventListener('click', render);
+    render();
+    $('#downloadBtn').addEventListener('click', async () => {
+      const node = document.getElementById('capture');
+      const canvas = await html2canvas(node,{backgroundColor:null,scale:2});
+      const data = canvas.toDataURL('image/png');
+      const a=document.createElement('a');a.href=data;a.download='tweet.png';a.click();
+    });
+  </script>
+</body>
+</html>
