@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Despensa Lo de Ro - POS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3a0ca3;
+            --accent-color: #f72585;
+            --light-color: #f8f9fa;
+            --dark-color: #2b2d42;
+            --success-color: #4cc9f0;
+            --warning-color: #f8961e;
+            --info-color: #7209b7;
+            --card-bg: #ffffff;
+            --sidebar-bg: #3a0ca3;
+            --border-radius: 12px;
+            --box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --gradient-primary: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+            --gradient-accent: linear-gradient(135deg, #f72585 0%, #b5179e 100%);
+            --gradient-success: linear-gradient(135deg, #4cc9f0 0%, #4895ef 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Inter', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ec 100%);
+            color: var(--dark-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header Styles */
+        header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: var(--box-shadow);
+            position: relative;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo i {
+            font-size: 2rem;
+            background: var(--gradient-accent);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 1.5rem;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 50px;
+            transition: var(--transition);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        nav a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            transition: var(--transition);
+            z-index: -1;
+        }
+
+        nav a:hover::before, nav a.active::before {
+            left: 0;
+        }
+
+        nav a:hover, nav a.active {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        /* Main Content Styles */
+        main {
+            flex: 1;
+            padding: 2rem;
+        }
+
+        .window {
+            display: none;
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 2rem;
+            height: calc(100vh - 180px);
+            overflow: auto;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .window.active {
+            display: block;
+        }
+
+        /* Footer Styles */
+        footer {
+            background: var(--gradient-primary);
+            color: white;
+            text-align: center;
+            padding: 1.2rem;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+
+        /* Ventas Window Styles */
+        .sales-container {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 2rem;
+            height: 100%;
+        }
+
+        .product-input {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .barcode-input, .price-input {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .barcode-input label, .price-input label {
+            font-weight: 600;
+            color: var(--dark-color);
+            font-size: 1.1rem;
+        }
+
+        .barcode-input input, .price-input input {
+            padding: 1.2rem;
+            border: 2px solid #e0e0e0;
+            border-radius: var(--border-radius);
+            font-size: 1.1rem;
+            transition: var(--transition);
+            background: #fafafa;
+        }
+
+        .barcode-input input:focus, .price-input input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+            background: white;
+            transform: translateY(-2px);
+        }
+
+        .price-input-container {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .price-input-container input {
+            flex: 1;
+        }
+
+        .price-input-container button {
+            padding: 0 1.5rem;
+            border: none;
+            border-radius: var(--border-radius);
+            background: var(--gradient-success);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .price-input-container button:hover {
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+        }
+
+        .ticket {
+            display: flex;
+            flex-direction: column;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+            background: white;
+        }
+
+        .ticket-header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 1.2rem;
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            letter-spacing: 0.5px;
+        }
+
+        .ticket-items {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            background: #fafafa;
+        }
+
+        .ticket-item {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 1rem;
+            padding: 1rem;
+            border-bottom: 1px solid #eaeaea;
+            transition: var(--transition);
+            border-radius: 8px;
+        }
+
+        .ticket-item:hover {
+            background: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .ticket-item:last-child {
+            border-bottom: none;
+        }
+
+        .ticket-footer {
+            padding: 1.5rem;
+            background: white;
+            border-top: 1px solid #eaeaea;
+        }
+
+        .total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--secondary-color);
+            padding: 1rem;
+            background: #f8f9ff;
+            border-radius: var(--border-radius);
+        }
+
+        .ticket-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 1rem 1.8rem;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.7rem;
+            font-size: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--gradient-primary);
+            filter: brightness(1.1);
+        }
+
+        .btn-danger {
+            background: var(--gradient-accent);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: var(--gradient-accent);
+            filter: brightness(1.1);
+        }
+
+        .keypad {
+            margin-top: 1.5rem;
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        .keypad-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.8rem;
+        }
+
+        .keypad-btn {
+            padding: 1.2rem;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: var(--border-radius);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+        }
+
+        .keypad-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            transform: translateY(-3px);
+        }
+
+        .keypad-btn.enter {
+            grid-column: span 2;
+            background: var(--gradient-success);
+            color: white;
+            border-color: var(--success-color);
+        }
+
+        .keypad-btn.enter:hover {
+            filter: brightness(1.1);
+        }
+
+        .sales-info {
+            margin-top: 1.5rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.2rem;
+        }
+
+        .info-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            border-left: 5px solid var(--primary-color);
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .info-card h3 {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sales-history {
+            margin-top: 1.5rem;
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        .sales-history h3 {
+            margin-bottom: 1rem;
+            color: var(--dark-color);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #eee;
+            transition: var(--transition);
+        }
+
+        .history-item:hover {
+            background: #f8f9ff;
+            padding-left: 0.5rem;
+            border-radius: 4px;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Inventario Window Styles */
+        .inventory-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            gap: 1rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 50px;
+            padding: 0.5rem 1.2rem;
+            width: 300px;
+            transition: var(--transition);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .search-box:focus-within {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        .search-box input {
+            border: none;
+            outline: none;
+            flex: 1;
+            padding: 0.7rem;
+            background: transparent;
+        }
+
+        .inventory-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+        }
+
+        .inventory-table th {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 1.2rem;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .inventory-table td {
+            padding: 1.2rem;
+            border-bottom: 1px solid #eee;
+            transition: var(--transition);
+        }
+
+        .inventory-table tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+
+        .inventory-table tr:hover {
+            background-color: #f0f4ff;
+        }
+
+        /* Notas Window Styles */
+        .notes-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            height: 100%;
+        }
+
+        .note-editor {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            background: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        .note-input {
+            flex: 1;
+            padding: 1.5rem;
+            border: 2px solid #e0e0e0;
+            border-radius: var(--border-radius);
+            resize: none;
+            font-size: 1rem;
+            line-height: 1.5;
+            transition: var(--transition);
+            background: #fafafa;
+        }
+
+        .note-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+            background: white;
+        }
+
+        .note-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-success {
+            background: var(--gradient-success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: var(--gradient-success);
+            filter: brightness(1.1);
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        .checkbox-container input {
+            display: none;
+        }
+
+        .checkmark {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .checkbox-container input:checked + .checkmark {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        .checkbox-container input:checked + .checkmark::after {
+            content: '✓';
+            color: white;
+            font-size: 14px;
+        }
+
+        .recent-notes {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .note-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            border-left: 5px solid var(--primary-color);
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .note-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .note-card.important {
+            border-left-color: var(--accent-color);
+        }
+
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+        }
+
+        .note-date {
+            font-size: 0.8rem;
+            color: #777;
+        }
+
+        .important-marker {
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .note-content {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+
+        .note-actions-buttons {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+        }
+
+        .note-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .note-btn.edit {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .note-btn.delete {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .note-btn:hover {
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+        }
+
+        /* Modal de confirmación */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .modal h2 {
+            margin-bottom: 1rem;
+            color: var(--dark-color);
+        }
+
+        .modal p {
+            margin-bottom: 2rem;
+            color: #666;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 1200px) {
+            .sales-container, .notes-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .inventory-actions {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .search-box {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            main {
+                padding: 1rem;
+            }
+            
+            .window {
+                padding: 1.5rem;
+            }
+            
+            nav ul {
+                gap: 0.5rem;
+            }
+            
+            nav a {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .ticket-item {
+                grid-template-columns: 1fr 1fr;
+                gap: 0.5rem;
+            }
+        }
+
+        /* Scrollbar personalizado */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary-color);
+        }
+
+        /* Input file personalizado */
+        .file-input-container {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input-container input[type=file] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-store"></i>
+                    <h1>Despensa Lo de Ro</h1>
+                </div>
+                <nav>
+                    <ul>
+                        <li><a href="#" class="nav-link active" data-target="sales">
+                            <i class="fas fa-cash-register"></i> Ventas
+                        </a></li>
+                        <li><a href="#" class="nav-link" data-target="inventory">
+                            <i class="fas fa-boxes"></i> Inventario
+                        </a></li>
+                        <li><a href="#" class="nav-link" data-target="notes">
+                            <i class="fas fa-sticky-note"></i> Notas
+                        </a></li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+
+        <main>
+            <!-- Ventana de Ventas -->
+            <section id="sales" class="window active">
+                <div class="sales-container">
+                    <div class="product-input">
+                        <div class="barcode-input">
+                            <label for="barcode"><i class="fas fa-barcode"></i> Ingresar código de barras</label>
+                            <input type="text" id="barcode" placeholder="Escanear o ingresar código manualmente">
+                        </div>
+                        
+                        <div class="price-input">
+                            <label for="manual-price"><i class="fas fa-tag"></i> Ingresar precio manual</label>
+                            <div class="price-input-container">
+                                <input type="text" id="manual-price" placeholder="Ingrese el precio del producto">
+                                <button id="add-manual-price">
+                                    <i class="fas fa-plus"></i> Agregar
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="keypad">
+                            <div class="keypad-grid">
+                                <button class="keypad-btn" data-value="1">1</button>
+                                <button class="keypad-btn" data-value="2">2</button>
+                                <button class="keypad-btn" data-value="3">3</button>
+                                <button class="keypad-btn" data-value="4">4</button>
+                                <button class="keypad-btn" data-value="5">5</button>
+                                <button class="keypad-btn" data-value="6">6</button>
+                                <button class="keypad-btn" data-value="7">7</button>
+                                <button class="keypad-btn" data-value="8">8</button>
+                                <button class="keypad-btn" data-value="9">9</button>
+                                <button class="keypad-btn" data-value="0">0</button>
+                                <button class="keypad-btn" data-value=".">.</button>
+                                <button class="keypad-btn" id="backspace-btn"><i class="fas fa-backspace"></i></button>
+                                <button class="keypad-btn enter" id="keypad-enter"><i class="fas fa-check"></i> Ingresar</button>
+                            </div>
+                        </div>
+                        
+                        <div class="sales-info">
+                            <div class="info-card">
+                                <h3><i class="far fa-calendar"></i> Fecha</h3>
+                                <p id="current-date">Lunes, 15 de Mayo 2023</p>
+                            </div>
+                            <div class="info-card">
+                                <h3><i class="fas fa-receipt"></i> ID del Ticket</h3>
+                                <p id="ticket-id">T-001234</p>
+                            </div>
+                        </div>
+                        
+                        <div class="sales-history">
+                            <h3><i class="fas fa-history"></i> Últimas 5 Ventas</h3>
+                            <div class="history-list" id="history-list">
+                                <!-- El historial se cargará dinámicamente aquí -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ticket-section">
+                        <div class="ticket">
+                            <div class="ticket-header">
+                                <i class="fas fa-receipt"></i> Ticket de Venta
+                            </div>
+                            <div class="ticket-items" id="ticket-items">
+                                <!-- Los productos se agregarán aquí dinámicamente -->
+                            </div>
+                            <div class="ticket-footer">
+                                <div class="total">
+                                    <span>Total:</span>
+                                    <span id="total-amount">$0.00</span>
+                                </div>
+                                <div class="ticket-actions">
+                                    <button class="btn btn-primary" id="finalizar-ticket">
+                                        <i class="fas fa-check-circle"></i> Finalizar Ticket
+                                    </button>
+                                    <button class="btn btn-danger" id="borrar-ticket">
+                                        <i class="fas fa-trash"></i> Borrar Ticket
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Ventana de Inventario -->
+            <section id="inventory" class="window">
+                <div class="inventory-actions">
+                    <div class="search-box">
+                        <i class="fas fa-search" style="color: #666;"></i>
+                        <input type="text" id="search-inventory" placeholder="Buscar por código o nombre...">
+                    </div>
+                    <div class="action-buttons">
+                        <div class="file-input-container">
+                            <button class="btn btn-primary">
+                                <i class="fas fa-file-excel"></i> Importar Excel
+                            </button>
+                            <input type="file" id="excel-file" accept=".xlsx, .xls">
+                        </div>
+                        <button class="btn btn-danger" id="clear-inventory">
+                            <i class="fas fa-trash"></i> Limpiar Inventario
+                        </button>
+                    </div>
+                </div>
+                
+                <table class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>Código de Barra</th>
+                            <th>Nombre del Producto</th>
+                            <th>Precio Actual</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventory-table-body">
+                        <!-- Los productos se cargarán dinámicamente aquí -->
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Ventana de Notas -->
+            <section id="notes" class="window">
+                <div class="notes-container">
+                    <div class="note-editor">
+                        <textarea class="note-input" id="note-text" placeholder="Escribe tu nota aquí..."></textarea>
+                        <div class="note-actions">
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="important">
+                                <span class="checkmark"></span>
+                                <label for="important">Marcar como importante</label>
+                            </div>
+                            <button class="btn btn-success" id="save-note">
+                                <i class="fas fa-save"></i> Guardar Nota
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="recent-notes">
+                        <h3><i class="fas fa-clock"></i> Notas Recientes</h3>
+                        <div id="notes-list">
+                            <!-- Las notas se cargarán dinámicamente aquí -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            Despensa Lo de Ro
+        </footer>
+    </div>
+
+    <!-- Modal de confirmación -->
+    <div class="modal" id="confirm-modal">
+        <div class="modal-content">
+            <h2 id="modal-title">Confirmar Acción</h2>
+            <p id="modal-message">¿Está seguro de que desea realizar esta acción?</p>
+            <div class="modal-actions">
+                <button class="btn btn-primary" id="modal-confirm">Confirmar</button>
+                <button class="btn btn-danger" id="modal-cancel">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Datos de productos de ejemplo
+        let productos = JSON.parse(localStorage.getItem('productos')) || [
+            { id: 1, codigo: '7501234567890', nombre: 'Arroz Integral 1kg', precio: 85.00 },
+            { id: 2, codigo: '7501234567891', nombre: 'Aceite de Oliva 500ml', precio: 220.00 },
+            { id: 3, codigo: '7501234567892', nombre: 'Leche Descremada 1L', precio: 65.00 },
+            { id: 4, codigo: '7501234567893', nombre: 'Pan Integral', precio: 45.00 },
+            { id: 5, codigo: '7501234567894', nombre: 'Azúcar Morena 1kg', precio: 60.00 },
+            { id: 6, codigo: '7501234567895', nombre: 'Harina de Trigo 1kg', precio: 55.00 },
+            { id: 7, codigo: '7501234567896', nombre: 'Galletas Integrales', precio: 42.00 },
+            { id: 8, codigo: '7501234567897', nombre: 'Yogur Natural 1kg', precio: 95.00 }
+        ];
+
+        // Variables globales
+        let ticketActual = [];
+        let precioManual = '';
+        let modoPrecioManual = false;
+        let historialVentas = JSON.parse(localStorage.getItem('historialVentas')) || [];
+        let ticketCounter = parseInt(localStorage.getItem('ticketCounter')) || 1234;
+        let notas = JSON.parse(localStorage.getItem('notas')) || [];
+        let activeInput = null;
+
+        // Navegación entre ventanas
+        document.addEventListener('DOMContentLoaded', function() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const windows = document.querySelectorAll('.window');
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Remover clase active de todos los enlaces
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    
+                    // Agregar clase active al enlace clickeado
+                    this.classList.add('active');
+                    
+                    // Ocultar todas las ventanas
+                    windows.forEach(window => window.classList.remove('active'));
+                    
+                    // Mostrar la ventana correspondiente
+                    const target = this.getAttribute('data-target');
+                    document.getElementById(target).classList.add('active');
+                });
+            });
+            
+            // Actualizar fecha actual
+            const currentDateElement = document.getElementById('current-date');
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            currentDateElement.textContent = now.toLocaleDateString('es-ES', options);
+            
+            // Generar ID de ticket único
+            const ticketIdElement = document.getElementById('ticket-id');
+            ticketIdElement.textContent = 'T-' + ticketCounter;
+            
+            // Configurar funcionalidad del teclado numérico
+            const keypadButtons = document.querySelectorAll('.keypad-btn');
+            const barcodeInput = document.getElementById('barcode');
+            const manualPriceInput = document.getElementById('manual-price');
+            
+            // Establecer focus inicial
+            barcodeInput.focus();
+            activeInput = barcodeInput;
+            
+            // Detectar cambios de focus
+            barcodeInput.addEventListener('focus', () => activeInput = barcodeInput);
+            manualPriceInput.addEventListener('focus', () => activeInput = manualPriceInput);
+            
+            keypadButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const value = this.getAttribute('data-value');
+                    const icon = this.querySelector('i');
+                    
+                    if (this.id === 'backspace-btn') {
+                        if (activeInput) {
+                            activeInput.value = activeInput.value.slice(0, -1);
+                        }
+                    } else if (this.id === 'keypad-enter') {
+                        if (activeInput === barcodeInput && barcodeInput.value) {
+                            procesarCodigoBarras(barcodeInput.value);
+                            barcodeInput.value = '';
+                        } else if (activeInput === manualPriceInput && manualPriceInput.value) {
+                            agregarPrecioManual();
+                        }
+                    } else if (value) {
+                        if (activeInput) {
+                            activeInput.value += value;
+                        }
+                    }
+                });
+            });
+            
+            // Configurar entrada de código de barras
+            barcodeInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    procesarCodigoBarras(this.value);
+                    this.value = '';
+                }
+            });
+            
+            // Configurar entrada de precio manual
+            manualPriceInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    agregarPrecioManual();
+                }
+            });
+            
+            // Configurar botón de agregar precio manual
+            document.getElementById('add-manual-price').addEventListener('click', agregarPrecioManual);
+            
+            // Configurar botones de ticket
+            document.getElementById('finalizar-ticket').addEventListener('click', finalizarTicket);
+            document.getElementById('borrar-ticket').addEventListener('click', borrarTicket);
+            
+            // Configurar modal
+            document.getElementById('modal-cancel').addEventListener('click', function() {
+                document.getElementById('confirm-modal').style.display = 'none';
+            });
+            
+            // Configurar inventario
+            document.getElementById('search-inventory').addEventListener('input', filtrarInventario);
+            document.getElementById('clear-inventory').addEventListener('click', limpiarInventario);
+            document.getElementById('excel-file').addEventListener('change', importarExcel);
+            
+            // Configurar notas
+            document.getElementById('save-note').addEventListener('click', guardarNota);
+            
+            // Agregar efecto de hover a los botones
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(button => {
+                button.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-3px)';
+                });
+                
+                button.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+            
+            // Inicializar ticket vacío
+            actualizarTicket();
+            
+            // Cargar historial de ventas
+            actualizarHistorialVentas();
+            
+            // Cargar inventario
+            actualizarInventario();
+            
+            // Cargar notas
+            actualizarNotas();
+        });
+
+        // Funciones de la aplicación
+        function procesarCodigoBarras(codigo) {
+            if (!codigo) return;
+            
+            // Verificar si es un código de producto
+            const producto = productos.find(p => p.codigo === codigo);
+            
+            if (producto) {
+                // Agregar producto al ticket
+                agregarProductoATicket(producto);
+            } else {
+                alert('Producto no encontrado. Verifique el código de barras.');
+            }
+        }
+
+        function agregarPrecioManual() {
+            const manualPriceInput = document.getElementById('manual-price');
+            const precio = parseFloat(manualPriceInput.value);
+            
+            if (isNaN(precio) || precio <= 0) {
+                alert('Por favor ingrese un precio válido (mayor a 0).');
+                manualPriceInput.focus();
+                return;
+            }
+            
+            // Crear un producto genérico con el precio manual
+            const productoManual = {
+                id: Date.now(), // ID único basado en timestamp
+                codigo: 'MANUAL',
+                nombre: 'Producto Manual',
+                precio: precio
+            };
+            
+            agregarProductoATicket(productoManual);
+            
+            // Limpiar campo
+            manualPriceInput.value = '';
+            manualPriceInput.focus();
+        }
+
+        function agregarProductoATicket(producto) {
+            // Verificar si el producto ya está en el ticket
+            const itemExistente = ticketActual.find(item => item.producto.id === producto.id);
+            
+            if (itemExistente) {
+                // Incrementar cantidad
+                itemExistente.cantidad++;
+            } else {
+                // Agregar nuevo producto
+                ticketActual.push({
+                    producto: producto,
+                    cantidad: 1
+                });
+            }
+            
+            actualizarTicket();
+        }
+
+        function actualizarTicket() {
+            const ticketItems = document.getElementById('ticket-items');
+            const totalAmount = document.getElementById('total-amount');
+            
+            // Limpiar ticket
+            ticketItems.innerHTML = '';
+            
+            // Calcular total
+            let total = 0;
+            
+            // Agregar productos al ticket
+            ticketActual.forEach(item => {
+                const subtotal = item.producto.precio * item.cantidad;
+                total += subtotal;
+                
+                const itemElement = document.createElement('div');
+                itemElement.className = 'ticket-item';
+                itemElement.innerHTML = `
+                    <div>${item.producto.nombre}</div>
+                    <div>${item.cantidad}</div>
+                    <div>$${item.producto.precio.toFixed(2)}</div>
+                    <div>$${subtotal.toFixed(2)}</div>
+                `;
+                
+                ticketItems.appendChild(itemElement);
+            });
+            
+            // Actualizar total
+            totalAmount.textContent = `$${total.toFixed(2)}`;
+        }
+
+        function finalizarTicket() {
+            if (ticketActual.length === 0) {
+                alert('No hay productos en el ticket.');
+                return;
+            }
+            
+            // Mostrar modal de confirmación
+            document.getElementById('modal-title').textContent = 'Finalizar Ticket';
+            document.getElementById('modal-message').textContent = '¿Está seguro de que desea finalizar este ticket?';
+            document.getElementById('confirm-modal').style.display = 'flex';
+            
+            // Configurar acción de confirmación
+            document.getElementById('modal-confirm').onclick = function() {
+                // Calcular total
+                const total = ticketActual.reduce((sum, item) => {
+                    return sum + (item.producto.precio * item.cantidad);
+                }, 0);
+                
+                // Crear registro de venta
+                const venta = {
+                    id: 'T-' + ticketCounter,
+                    total: total,
+                    hora: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+                    fecha: new Date().toLocaleDateString('es-ES'),
+                    productos: [...ticketActual]
+                };
+                
+                // Agregar al historial
+                historialVentas.unshift(venta);
+                
+                // Mantener solo las últimas 5 ventas
+                if (historialVentas.length > 5) {
+                    historialVentas = historialVentas.slice(0, 5);
+                }
+                
+                // Guardar en localStorage
+                localStorage.setItem('historialVentas', JSON.stringify(historialVentas));
+                localStorage.setItem('ticketCounter', (ticketCounter + 1).toString());
+                
+                // Mostrar confirmación
+                alert(`Ticket ${venta.id} finalizado correctamente. Total: $${total.toFixed(2)}`);
+                
+                // Limpiar ticket
+                ticketActual = [];
+                actualizarTicket();
+                
+                // Generar nuevo ID de ticket
+                ticketCounter++;
+                document.getElementById('ticket-id').textContent = 'T-' + ticketCounter;
+                
+                // Actualizar historial
+                actualizarHistorialVentas();
+                
+                // Cerrar modal
+                document.getElementById('confirm-modal').style.display = 'none';
+            };
+        }
+
+        function borrarTicket() {
+            if (ticketActual.length === 0) {
+                alert('El ticket ya está vacío.');
+                return;
+            }
+            
+            // Mostrar modal de confirmación
+            document.getElementById('modal-title').textContent = 'Borrar Ticket';
+            document.getElementById('modal-message').textContent = '¿Está seguro de que desea borrar todo el ticket? Esta acción no se puede deshacer.';
+            document.getElementById('confirm-modal').style.display = 'flex';
+            
+            // Configurar acción de confirmación
+            document.getElementById('modal-confirm').onclick = function() {
+                // Limpiar ticket
+                ticketActual = [];
+                actualizarTicket();
+                
+                // Cerrar modal
+                document.getElementById('confirm-modal').style.display = 'none';
+            };
+        }
+
+        function actualizarHistorialVentas() {
+            const historyList = document.getElementById('history-list');
+            
+            // Limpiar historial
+            historyList.innerHTML = '';
+            
+            if (historialVentas.length === 0) {
+                historyList.innerHTML = '<div class="history-item">No hay ventas recientes</div>';
+                return;
+            }
+            
+            // Agregar ventas al historial
+            historialVentas.forEach(venta => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.innerHTML = `
+                    <span>${venta.id}</span>
+                    <span>$${venta.total.toFixed(2)}</span>
+                    <span>${venta.hora}</span>
+                `;
+                
+                historyList.appendChild(historyItem);
+            });
+        }
+
+        // Funciones del inventario
+        function actualizarInventario() {
+            const tableBody = document.getElementById('inventory-table-body');
+            
+            // Limpiar tabla
+            tableBody.innerHTML = '';
+            
+            // Agregar productos a la tabla
+            productos.forEach(producto => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${producto.codigo}</td>
+                    <td>${producto.nombre}</td>
+                    <td>$${producto.precio.toFixed(2)}</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        function filtrarInventario() {
+            const searchTerm = document.getElementById('search-inventory').value.toLowerCase();
+            const tableBody = document.getElementById('inventory-table-body');
+            
+            // Limpiar tabla
+            tableBody.innerHTML = '';
+            
+            // Filtrar productos
+            const productosFiltrados = productos.filter(producto => 
+                producto.codigo.toLowerCase().includes(searchTerm) || 
+                producto.nombre.toLowerCase().includes(searchTerm)
+            );
+            
+            // Agregar productos filtrados a la tabla
+            productosFiltrados.forEach(producto => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${producto.codigo}</td>
+                    <td>${producto.nombre}</td>
+                    <td>$${producto.precio.toFixed(2)}</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        function limpiarInventario() {
+            // Mostrar modal de confirmación
+            document.getElementById('modal-title').textContent = 'Limpiar Inventario';
+            document.getElementById('modal-message').textContent = '¿Está seguro de que desea limpiar todo el inventario? Esta acción no se puede deshacer.';
+            document.getElementById('confirm-modal').style.display = 'flex';
+            
+            // Configurar acción de confirmación
+            document.getElementById('modal-confirm').onclick = function() {
+                // Limpiar inventario
+                productos = [];
+                localStorage.setItem('productos', JSON.stringify(productos));
+                actualizarInventario();
+                
+                // Cerrar modal
+                document.getElementById('confirm-modal').style.display = 'none';
+            };
+        }
+
+        function importarExcel(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // Simular importación de Excel (en un caso real usarías una librería como SheetJS)
+            alert('Función de importación de Excel simulada. En una implementación real, se procesaría el archivo Excel.');
+            
+            // Limpiar el input file
+            event.target.value = '';
+        }
+
+        // Funciones de notas
+        function guardarNota() {
+            const noteText = document.getElementById('note-text').value;
+            const isImportant = document.getElementById('important').checked;
+            
+            if (!noteText.trim()) {
+                alert('Por favor ingrese el contenido de la nota.');
+                return;
+            }
+            
+            // Crear nueva nota
+            const nuevaNota = {
+                id: Date.now(),
+                contenido: noteText,
+                importante: isImportant,
+                fecha: new Date().toLocaleDateString('es-ES'),
+                hora: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
+            };
+            
+            // Agregar nota al array
+            notas.unshift(nuevaNota);
+            
+            // Guardar en localStorage
+            localStorage.setItem('notas', JSON.stringify(notas));
+            
+            // Limpiar campos
+            document.getElementById('note-text').value = '';
+            document.getElementById('important').checked = false;
+            
+            // Actualizar lista de notas
+            actualizarNotas();
+            
+            alert('Nota guardada correctamente.');
+        }
+
+        function actualizarNotas() {
+            const notesList = document.getElementById('notes-list');
+            
+            // Limpiar lista
+            notesList.innerHTML = '';
+            
+            if (notas.length === 0) {
+                notesList.innerHTML = '<div class="note-card">No hay notas recientes</div>';
+                return;
+            }
+            
+            // Agregar notas a la lista
+            notas.forEach(nota => {
+                const noteCard = document.createElement('div');
+                noteCard.className = `note-card ${nota.importante ? 'important' : ''}`;
+                noteCard.innerHTML = `
+                    <div class="note-header">
+                        <span class="note-date">${nota.fecha} - ${nota.hora}</span>
+                        ${nota.importante ? '<span class="important-marker"><i class="fas fa-star"></i> Importante</span>' : ''}
+                    </div>
+                    <div class="note-content">${nota.contenido}</div>
+                    <div class="note-actions-buttons">
+                        <button class="note-btn edit" onclick="editarNota(${nota.id})">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                        <button class="note-btn delete" onclick="eliminarNota(${nota.id})">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                    </div>
+                `;
+                
+                notesList.appendChild(noteCard);
+            });
+        }
+
+        function editarNota(id) {
+            const nota = notas.find(n => n.id === id);
+            if (!nota) return;
+            
+            // Llenar el editor con la nota existente
+            document.getElementById('note-text').value = nota.contenido;
+            document.getElementById('important').checked = nota.importante;
+            
+            // Eliminar la nota original
+            eliminarNota(id, false);
+            
+            // Hacer scroll al editor
+            document.getElementById('note-text').focus();
+        }
+
+        function eliminarNota(id, confirmar = true) {
+            if (confirmar) {
+                // Mostrar modal de confirmación
+                document.getElementById('modal-title').textContent = 'Eliminar Nota';
+                document.getElementById('modal-message').textContent = '¿Está seguro de que desea eliminar esta nota?';
+                document.getElementById('confirm-modal').style.display = 'flex';
+                
+                // Configurar acción de confirmación
+                document.getElementById('modal-confirm').onclick = function() {
+                    // Eliminar nota
+                    notas = notas.filter(n => n.id !== id);
+                    localStorage.setItem('notas', JSON.stringify(notas));
+                    actualizarNotas();
+                    
+                    // Cerrar modal
+                    document.getElementById('confirm-modal').style.display = 'none';
+                };
+            } else {
+                // Eliminar sin confirmación (para edición)
+                notas = notas.filter(n => n.id !== id);
+                localStorage.setItem('notas', JSON.stringify(notas));
+                actualizarNotas();
+            }
+        }
+    </script>
+</body>
+</html>
